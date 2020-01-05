@@ -4,35 +4,35 @@
 
 #include <fstream>
 
-#include <experimental/filesystem>
+#include <filesystem>
 
 #include <set>
 #include <map>
 #include <queue>
 
-enum class File
-{
-    IGNORE = 0,
-    UNKNOWN = 1,
-    ADD = 2
-};
-
 
 class Statistics final
-        {
-        public :
+{
+public :
 
-            Statistics();
-            void addFileInfo(const File TYPE);
-            void printDirectoryStatistics();
-            
-        private :
+    enum class File
+    {
+        IGNORE = 0,
+        UNKNOWN = 1,
+        ADD = 2
+    };
 
-                    int files;
-                    int unknown_files;
-                    int ignored_files;
+    Statistics();
+    void addFileInfo(const File TYPE);
+    void printDirectoryStatistics();
 
-        };
+private :
+
+    int files;
+    int unknown_files;
+    int ignored_files;
+
+};
 
 [[nodiscard]]
 std::pair<std::string, bool> getLanguageByExtension(const std::map<std::string, std::string>& languages, const std::string&& extension);
@@ -62,21 +62,20 @@ int main(int argc, char *argv[])
     {
         std::cout << "Input the path to files, which must be ignored.\n";
     }
-    std::set<std::experimental::filesystem::path> ignoreFiles;
+    std::set<std::filesystem::path> ignoreFiles;
 
     for (int i = 0; i < numberIgnoreFiles; ++i)
     {
         std::string temp;
         std::cin >> temp;
 
-        std::experimental::filesystem::path dir{temp};
-        if (!std::experimental::filesystem::exists(temp))
+        std::filesystem::path dir{temp};
+        if (!std::filesystem::exists(temp))
         {
             std::cout << "The path " << dir << " is invalid.\n";
             continue;
         }
-
-        dir = std::experimental::filesystem::canonical(dir, std::experimental::filesystem::path{});
+        dir = std::filesystem::canonical(dir);
 
         auto it = ignoreFiles.find(dir);
         if (it != ignoreFiles.end())
@@ -107,16 +106,16 @@ int main(int argc, char *argv[])
 
     initializeLanguages(languages);
 
-    std::experimental::filesystem::path directory = std::experimental::filesystem::current_path();
+    std::filesystem::path directory = std::filesystem::current_path();
 
     bool atLeastOneFile = false;
     int lines_amount = 0;
 
-    std::queue<std::experimental::filesystem::path> files;
+    std::queue<std::filesystem::path> files;
     files.push(directory);
     while (files.size() != 0)
     {
-        for (const auto& file : std::experimental::filesystem::directory_iterator{files.front()})
+        for (const auto& file : std::filesystem::directory_iterator{files.front()})
         {
             // Ignore the script itself.
             if (scriptName == std::string(file.path().c_str()))
@@ -127,11 +126,11 @@ int main(int argc, char *argv[])
             auto it = ignoreFiles.find(std::string(file.path().c_str()));
             if (it != ignoreFiles.end())
             {
-                directoryInfo.addFileInfo(File::IGNORE);
+                directoryInfo.addFileInfo(Statistics::File::IGNORE);
                 continue;
             }
 
-            if (std::experimental::filesystem::is_directory(status(file)))
+            if (std::filesystem::is_directory(status(file)))
             {
                 files.push(file);
             }
@@ -140,13 +139,13 @@ int main(int argc, char *argv[])
                                                                            std::string(file.path().extension().c_str()));
             if (!isKnownFileExtension)
             {
-                directoryInfo.addFileInfo(File::UNKNOWN);
+                directoryInfo.addFileInfo(Statistics::File::UNKNOWN);
                 continue;
             }
 
-            if (std::experimental::filesystem::is_regular_file(status(file)))
+            if (std::filesystem::is_regular_file(status(file)))
             {
-                directoryInfo.addFileInfo(File::ADD);
+                directoryInfo.addFileInfo(Statistics::File::ADD);
                 atLeastOneFile = true;
             }
 
@@ -380,7 +379,7 @@ void Statistics::addFileInfo(const File TYPE)
         {
             break;
         }
-        
+
     }
 
     return;
@@ -408,9 +407,9 @@ void Statistics::printDirectoryStatistics()
 
 
 Statistics::Statistics():
-    files(0),
-    unknown_files(0),
-    ignored_files(0)
+        files(0),
+        unknown_files(0),
+        ignored_files(0)
 {
 
 }
