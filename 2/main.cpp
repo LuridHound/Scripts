@@ -13,45 +13,43 @@
 
 class Statistics final
 {
-public :
+    public :
 
-    enum class File
-    {
-        IGNORE = 0,
-        UNKNOWN = 1,
-        ADD = 2
-    };
+        enum class File
+        {
+            IGNORE = 0,
+            UNKNOWN = 1,
+            ADD = 2
+        };
 
-    Statistics();
-    void addFileInfo(const File TYPE);
-    void printDirectoryStatistics();
+        Statistics();
+        void addFileInfo(const File TYPE);
+        void printDirectoryStatistics();
 
-private :
+    private :
 
-    int files;
-    int unknown_files;
-    int ignored_files;
-
+        int files;
+        int unknown_files;
+        int ignored_files;
 };
 
 [[nodiscard]]
 std::pair<std::string, bool> getLanguageByExtension(const std::map<std::string, std::string>& languages, const std::string&& extension);
 
 [[nodiscard]]
-int getLinesInFile(std::string pathToFile);
+int getLinesInFile(std::string&& pathToFile, bool lastUse = false);
 
 void initializeLanguages(std::map<std::string, std::string>& languages);
 
 void filesLanguageStatistics(const std::map<int, std::string>& sortedByLines, const int lineAmountInFiles);
 
+void invitationMessage();
+
 int main(int argc, char *argv[])
 {
     Statistics directoryInfo;
 
-    std::cout << '\n' << '\n';
-    std::cout << "Don't delete, rename or move files in the current directory."
-              << '\n' << "Otherwise program can crash.";
-    std::cout << '\n' << '\n';
+    invitationMessage();
 
     std::cout << "Input the number of files to ignore.\n";
 
@@ -62,6 +60,7 @@ int main(int argc, char *argv[])
     {
         std::cout << "Input the path to files, which must be ignored.\n";
     }
+
     std::set<std::filesystem::path> ignoreFiles;
 
     for (int i = 0; i < numberIgnoreFiles; ++i)
@@ -80,7 +79,7 @@ int main(int argc, char *argv[])
         auto it = ignoreFiles.find(dir);
         if (it != ignoreFiles.end())
         {
-            std::cout << "You have already inputed this file.\n";
+            std::cout << "You have already recorded this file" << '\n';
             continue;
         }
         else
@@ -89,7 +88,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (ignoreFiles.size() != 0)
+    if (!ignoreFiles.empty())
     {
         std::cout << "The following files will be ignored :" << '\n';
         for (const auto& file : ignoreFiles)
@@ -100,9 +99,9 @@ int main(int argc, char *argv[])
 
     std::string scriptName = argv[0];
 
-    std::map<std::string, std::string> languages = {};    // find according files
-    std::map<std::string, int> infoByLanguage = {};                  //  have an information about how many lines each language have
-    std::map<int, std::string> sortedByLines = {};                   // the previous one, but the first field is the amount of lines.
+    std::map<std::string, std::string> languages = {};               // Find according files.
+    std::map<std::string, int> infoByLanguage = {};                  // Stores an information about how many lines each language have.
+    std::map<int, std::string> sortedByLines = {};                   // The previous one, but the first field is the amount of lines.
 
     initializeLanguages(languages);
 
@@ -113,7 +112,7 @@ int main(int argc, char *argv[])
 
     std::queue<std::filesystem::path> files;
     files.push(directory);
-    while (files.size() != 0)
+    while (!files.empty())
     {
         for (const auto& file : std::filesystem::directory_iterator{files.front()})
         {
@@ -159,12 +158,16 @@ int main(int argc, char *argv[])
         files.pop();
     }
 
-    for (auto it = infoByLanguage.begin(); it != infoByLanguage.end(); ++it)
+    //  To return memory from "std::string temp;".
+    (void)getLinesInFile("", true);
+
+    for (auto& languageInfo : infoByLanguage)
     {
-        sortedByLines[it->second] = it->first;
+        sortedByLines[languageInfo.second] = languageInfo.first;
     }
 
     directoryInfo.printDirectoryStatistics();
+
     if (atLeastOneFile)
     {
         filesLanguageStatistics(sortedByLines, lines_amount);
@@ -177,10 +180,16 @@ int main(int argc, char *argv[])
 //  It's guaranteed that file exists.
 //
 [[nodiscard]]
-int getLinesInFile(std::string pathToFile)
+int getLinesInFile(std::string&& pathToFile, bool lastUse)
 {
     static constexpr int MAX_EXPECTED_LENGTH = 100;
     static std::string temp;
+
+    if (lastUse)
+    {
+        temp.clear();
+        return -1;
+    }
 
     static bool initialized = false;
     if (!initialized)
@@ -303,8 +312,6 @@ void initializeLanguages(std::map<std::string, std::string>& languages)
     languages[".swift"]         = "Swift";
     languages[".ts"]            = "TypeScript";
     languages[".tsx"]           = "TypeScript";
-
-    return;
 }
 
 
@@ -332,27 +339,36 @@ void filesLanguageStatistics(const std::map<int, std::string>& sortedByLines, co
     std::cout << "=======================================";
     std::cout << '\n'
               << "Language statistics:"
-              << '\n';
+              << '\n' << '\n';
 
-    for (const auto& lines : sortedByLines)
+    const int maxLength = 12;   // "ActionScript"
+
+    for (const auto& line : sortedByLines)
     {
-        if (lines.first == 0)
+        if (line.first == 0)
         {
             continue;
         }
 
-        std::cout << '\t' << lines.second;
+        std::cout << std::setw(maxLength) << std::left << line.second;
 
-        float temp = static_cast<float>(lines.first) / lineAmountInFiles;
+        float temp = static_cast<float>(line.first) / lineAmountInFiles;
         temp *= 100;
 
-        std::cout << '\t' << '\t' << std::setprecision(4) << temp << '\t' << '\t' << lines.first << '\n';
+        std::cout << '\t' << '\t' << std::setprecision(4) << temp << "%" << '\t' << '\t' << line.first << '\n';
     }
 
-    std::cout << "=======================================";
-    std::cout << '\n';
+    std::cout << "======================================="
+              << '\n';
+}
 
-    return;
+
+Statistics::Statistics():
+        files(0),
+        unknown_files(0),
+        ignored_files(0)
+{
+
 }
 
 
@@ -381,8 +397,6 @@ void Statistics::addFileInfo(const File TYPE)
         }
 
     }
-
-    return;
 }
 
 
@@ -393,7 +407,7 @@ void Statistics::printDirectoryStatistics()
     std::cout << "=======================================";
     std::cout << '\n'
               << "Directory statistics :"
-              << '\n';
+              << '\n' << '\n';
 
     std::cout << '\t' << "Files in the directory: " << files << '.' << '\n' << '\n';
     std::cout << '\t' << "Ignored files : " << ignored_files << '.' << '\n' << '\n';
@@ -401,15 +415,13 @@ void Statistics::printDirectoryStatistics()
 
     std::cout << "=======================================";
     std::cout << '\n';
-
-    return;
 }
 
 
-Statistics::Statistics():
-        files(0),
-        unknown_files(0),
-        ignored_files(0)
+void invitationMessage()
 {
-
+    std::cout << '\n' << '\n'
+              << "Don't delete, rename or move files in the current directory."
+              << '\n' << "Otherwise program can crash."
+              << '\n' << '\n';
 }
