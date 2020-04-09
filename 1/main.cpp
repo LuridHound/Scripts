@@ -2,36 +2,18 @@
 #include <filesystem>
 
 
-//
-//
-void rename_if(const std::filesystem::path& path_1, std::string& pattern)
-{
-    auto ar = std::string(path_1.stem().filename().c_str()).find(pattern);
-
-    if(ar == std::string::npos)
-    {
-        return;
-    }
-
-    std::string temp = std::string(path_1.stem().filename().c_str()).substr(ar + pattern.length());
-
-    std::filesystem::path ho = (path_1.parent_path() / ( temp + std::string(path_1.extension().filename().c_str())));
-
-    std::filesystem::rename(path_1, ho);
-
-    return;
-}
+void rename_if(const std::filesystem::path& pathToFile, std::string& packName);
 
 
 int main(int argc, char* argv[])
 {
     if (argc != 2)
     {
-        std::cout << "Incorrect input. Input must contain the name of the game.";
+        std::cout << "Incorrect input. Input must contain the name of the pack.";
         return 0;
     }
 
-    std::string pattern = argv[1];
+    std::string packName = argv[1];
 
     std::filesystem::path directory = std::filesystem::current_path();
 
@@ -39,9 +21,30 @@ int main(int argc, char* argv[])
     {
         if (is_regular_file(file.path()))
         {
-            rename_if(file.path(), pattern);
+            rename_if(file.path(), packName);
         }
     }
 
     return 0;
+}
+
+
+void rename_if(const std::filesystem::path& pathToFile, std::string& packName)
+{
+    auto offset = std::string(pathToFile.stem().filename().c_str()).find(packName);
+
+    if (offset == std::string::npos)
+    {
+        return;
+    }
+
+    std::string filename = pathToFile.stem().filename().c_str();
+
+    std::string right = filename.substr(offset + packName.length());
+
+    std::string left = filename.substr(0, offset);
+
+    std::filesystem::path ho = (pathToFile.parent_path() / ( left.append(right.append(pathToFile.extension().filename().c_str()))));
+
+    std::filesystem::rename(pathToFile, ho);
 }
