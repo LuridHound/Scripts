@@ -1,5 +1,5 @@
-##Motivation
-My IDE doesn't support creation of the .inl file, that already have include guards/pragma.
+## Motivation
+Some IDE may not support creation of the .inl file, that already have include guards/pragma.
 Run this script to create necessary files.
 For more information run
 ``` cpp
