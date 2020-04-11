@@ -1,19 +1,27 @@
-#include <algorithm>
-#include <iterator>
-#include <map>
 #include <iostream>
 #include <fstream>
+
+#include <algorithm>
+
+#include <iterator>
+#include <set>
+#include <map>
+#include <queue>
+
 #include <filesystem>
+
 #include <type_traits>
 
-template<typename Iterator, typename T, typename = typename std::enable_if_t<std::is_convertible_v<T,std::string>>>
-void writeToFile(Iterator begin, Iterator end, T&& filename);
 
-template<typename FirstContainer, typename SecondContainer>
-void analyze(std::filesystem::path&& pathToDirectory, FirstContainer& container, SecondContainer& extensions);
+template<typename Iterator, typename T, typename = typename std::enable_if_t<std::is_same_v<T,std::ofstream>>>
+void writeToFile(Iterator begin, Iterator end, T& filename);
+
+template<typename FirstContainer>
+void analyze(std::filesystem::path&& pathToDirectory, FirstContainer& container);
 
 template<typename Container, typename File>
-void addRecord(Container& container, File file);
+void addRecord(Container& container, File file, std::string);
+
 
 int main(int argc, char* argv[])
 {
@@ -23,57 +31,84 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    std::vector<std::string> extensions;
-    extensions.reserve(argc - 1);
+    std::map<std::string, std::set<std::string>> filenames;
 
     for (int i = 1; i < argc; ++i)
     {
-        extensions.emplace_back(argv[i]);
+        filenames[argv[i]];
     }
-    
-    std::map<std::string, size_t> filenames;
 
-    analyze(std::filesystem::current_path(), filenames, extensions);
+    analyze(std::filesystem::current_path(), filenames);
 
-    writeToFile(filenames.begin(), filenames.end(), "result.txt");
+    std::ofstream result;
+
+    result.open("result.txt");
+
+    if (!result.is_open())
+    {
+        std::cout << "Cannot create a file for the result." << '\n';
+
+        result.close();
+
+        return -1;
+    }
+
+    for (const auto& extension : filenames)
+    {
+        result << '\t' << extension.first << '\n';
+
+        if (extension.second.empty())
+        {
+           continue;
+        }
+        else
+        {
+            writeToFile(extension.second.begin(), extension.second.end(), result);
+        }
+
+        result << "\n\n";
+    }
+
+    result.close();
 
     return 0;
 }
 
 
 template<typename Iterator, typename T, typename>
-void writeToFile(Iterator begin, Iterator end, T&& filename)
+void writeToFile(Iterator begin, Iterator end, T& filename)
 {
-    std::ofstream file(filename);
-    auto writeRecord = [number = 0](auto key) mutable
+    auto writeRecord = [number = 0, &filename](auto key) mutable
     {
-        return std::string(key.first + " = " + std::to_string(number++) + ",\n");
+        filename << std::string(key + " = " + std::to_string(number++) + ",\n");
     };
-    std::transform(begin, end, std::ostream_iterator<std::string>(file), writeRecord);
 
-    file.close();
+    std::for_each(begin, end, writeRecord);
 }
 
 
-template<typename FirstContainer, typename SecondContainer>
-void analyze(std::filesystem::path&& pathToDirectory, FirstContainer& container, SecondContainer& extensions)
+template<typename FirstContainer>
+void analyze(std::filesystem::path&& pathToDirectory, FirstContainer& container)
 {
-    for (const auto& file :std::filesystem::recursive_directory_iterator{pathToDirectory})
+    for (const auto& file :std::filesystem::directory_iterator{pathToDirectory})
     {
         auto currentExtension = std::string(file.path().extension());
 
-        auto it = std::find(extensions.begin(), extensions.end(), currentExtension);
-
-        if (it != extensions.end())
+        auto it = std::find_if(container.begin(), container.end(), [&currentExtension](auto key)
         {
-            addRecord(container, file);
+            return key.first == currentExtension;
+        });
+
+        if (it != container.end())
+        {
+            addRecord(container, file, (*it).first);
         }
     }
 }
 
 
 template<typename Container, typename File>
-void addRecord(Container& container, File file)
+void addRecord(Container& container, File file, std::string extension)
 {
     auto upperCase = [](std::string& str)
     {
@@ -86,5 +121,5 @@ void addRecord(Container& container, File file)
 
     upperCase(name);
 
-    container[name];
+    container[extension].insert(name);
 }
