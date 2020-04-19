@@ -4,7 +4,11 @@ project(RenamePack)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(RenamePack main.cpp)
+
+file(GLOB SOURCE *.cpp)
+
+add_executable(RenamePack ${SOURCE})
 
 target_link_libraries(RenamePack
+        -lpthread
         stdc++fs)
