@@ -1,5 +1,6 @@
 #include <iostream>
-#include <filesystem>
+
+#include "RenamePack.h"
 
 
 void rename_if(const std::filesystem::path& pathToFile, std::string& packName);
@@ -15,15 +16,9 @@ int main(int argc, char* argv[])
 
     std::string packName = argv[1];
 
-    std::filesystem::path directory = std::filesystem::current_path();
+    RenamePack program(argv[1]);
 
-    for (const auto& file : std::filesystem::recursive_directory_iterator{directory} )
-    {
-        if (is_regular_file(file.path()))
-        {
-            rename_if(file.path(), packName);
-        }
-    }
+    program.launch(rename_if);
 
     return 0;
 }
