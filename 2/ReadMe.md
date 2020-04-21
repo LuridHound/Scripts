@@ -6,6 +6,13 @@ Then you will see which programming languages you use in your project(this is de
 percent of lines of code according to the other files, and number of lines of code itself.
 
 ### Example
+
+Just run and follow instructions.
+``` cpp
+./CodeLine
+```
+
+The result might be the following.
 ``` cpp
 =======================================
 Directory statistics :
