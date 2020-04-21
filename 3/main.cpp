@@ -177,30 +177,36 @@ void toUpper(std::string& str)
 void printHelp()
 {
     std::cout << "Usage: "
-              << "crilf [OPTIONS] FILENAME ...\n"
+              << "crilf [OPTIONS] FILENAME ..." << '\n'
               << "Example: "
-              << "crilf -pf temp -p temp_1 temp_2\n"
+              << "crilf -pf temp -p temp_1 temp_2" << '\n'
 
               << '\n'
 
-              << "Pattern protection:\n"
-              << "-i Include guards.\n"
-              << "-p Pragma once.\n"
+              << "Default Mode : -ifI" << '\n'
+
+              << '\n'
+
+              << "Pattern protection:" << '\n'
+              << "-i Include guards." << '\n'
+              << "-p Pragma once." << '\n'
 
               << '\n'
 
               << "Miscellaneous:\n"
-              << "-f create file in the folder with the same name.\n"
+              << "-f create file in the folder with the same name." << '\n'
 
-              << "Files:\n"
-              << "-C create .cpp file.\n"
-              << "-H create .h file.\n"
-              << "-I create .inl file.\n"
+              << "Files:" << '\n'
+              << "-C create .cpp file." << '\n'
+              << "-H create .h file." << '\n'
+              << "-I create .inl file." << '\n'
 
               << '\n'
 
-              << "Do nothing, if file exists.\n"
-              << "Report bugs to: cursedseraph@mail.ru\n";
+              << "Do nothing, if file exists." << '\n'
+
+              << "If your key is incomplete, then default keys will be added(if they are necessary)." << '\n'
+              << "If no key was printed, then the default one will be chosen. " << '\n';
 }
 
 
@@ -342,11 +348,6 @@ void processKey(Key& state, std::string_view keys)
 //
 void validateKey(Key& state) 
 {
-    //  Pragma has a lower priority to be chosen.
-    if (haveKey(state, Key::INCLUDE_GUARDS) && haveKey(state, Key::PRAGMA)) {
-        state = static_cast<Key>(to_integral(state) ^ to_integral(Key::PRAGMA));
-    }
-
     bool noState = state == Key::EMPTY_MODE;
     bool noExtensions = !(haveKey(state, Key::CPP) || haveKey(state, Key::H) ||
                           haveKey(state, Key::INL));
@@ -354,9 +355,24 @@ void validateKey(Key& state)
     bool noGuard = !(haveKey(state, Key::PRAGMA) || haveKey(state, Key::INCLUDE_GUARDS)) &&
                    !haveKey(state, Key::CPP);
 
-    // Just add necessary flags for work.
-    if (noState || noExtensions || noGuard) 
+    if (noState)
     {
-        state = static_cast<Key>(to_integral(state) | to_integral(Key::DEFAULT_MODE));
+       state = Key::DEFAULT_MODE;
+    }
+
+    if (noExtensions)
+    {
+        state = static_cast<Key>(to_integral(state) | to_integral(Key::INL));
+    }
+
+    if (noGuard)
+    {
+       state = static_cast<Key>(to_integral(state) | to_integral(Key::INCLUDE_GUARDS));
+    }
+
+    //  Pragma has a lower priority to be chosen.
+    if (haveKey(state, Key::INCLUDE_GUARDS) && haveKey(state, Key::PRAGMA))
+    {
+        state = static_cast<Key>(to_integral(state) ^ to_integral(Key::PRAGMA));
     }
 }
