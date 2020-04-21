@@ -5,7 +5,10 @@ set(CMAKE_CXX_COMPILER g++)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(CodeLine main.cpp)
+file(GLOB_RECURSE SOURCE source/*.cpp)
 
-target_link_libraries(${PROJECT_NAME}
-        stdc++fs)
+add_executable(CodeLine ${SOURCE})
+
+target_link_libraries(CodeLine
+        stdc++fs
+        -lpthread)
