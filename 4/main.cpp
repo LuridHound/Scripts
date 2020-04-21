@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
 
     std::map<std::string, std::set<std::string>> filenames;
 
+    // Start with 1, because the 1st argument is the path to the program.
     for (int i = 1; i < argc; ++i)
     {
         filenames[argv[i]];
