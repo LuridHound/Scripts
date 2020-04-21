@@ -7,8 +7,8 @@
 #include <filesystem>
 #include <atomic>
 
-#include "JoinThreads.h"
-#include "QueueThreadSafe.h"
+#include "../JoinThreads/JoinThreads.h"
+#include "../QueueThreadSafe/QueueThreadSafe.h"
 
 
 template<class T = std::function<void()>>

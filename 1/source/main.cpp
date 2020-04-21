@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "RenamePack.h"
+#include "RenamePack/RenamePack.h"
 
 
 void rename_if(const std::filesystem::path& pathToFile, std::string& packName);

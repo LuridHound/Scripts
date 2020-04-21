@@ -5,7 +5,7 @@ project(RenamePack)
 set(CMAKE_CXX_STANDARD 17)
 
 
-file(GLOB SOURCE *.cpp)
+file(GLOB_RECURSE SOURCE source/*.cpp)
 
 add_executable(RenamePack ${SOURCE})
 
