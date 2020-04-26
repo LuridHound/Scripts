@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
             if (std::filesystem::is_directory(status(file)))
             {
                 files.push(file);
+                continue;
             }
 
             auto [language, isKnownFileExtension] = AnalyzeFunctions::getLanguageByExtension(languages,
