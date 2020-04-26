@@ -66,6 +66,9 @@ int main(int argc, char *argv[])
 
     std::string scriptName = argv[0];
 
+    // Remove "./" from the name.
+    scriptName.erase(0, 2);
+
     std::map<std::string, std::string> languages = {};               // Find according files.
     std::map<int, std::string> sortedByLines = {};                   // The previous one, but the first field is the amount of lines.
 
@@ -85,7 +88,7 @@ int main(int argc, char *argv[])
         for (const auto& file : std::filesystem::directory_iterator{files.front()})
         {
             // Ignore the script itself.
-            if (scriptName == std::string(file.path().c_str()))
+            if (scriptName == std::string(file.path().filename().c_str()))
             {
                 continue;
             }
