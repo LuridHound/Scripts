@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
         if (std::strncmp(argv[1], "--help", 6) == 0)
         {
             printHelp();
-            return static_cast<int>(Return::HELP);
+            return to_integral(Return::HELP);
         }
     }
 
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
         create(state, argv[i]);
     }
 
-    return static_cast<int>(Return::NORMAL);
+    return to_integral(Return::NORMAL);
 }
 
 
